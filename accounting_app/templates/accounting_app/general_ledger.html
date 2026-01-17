@@ -1,0 +1,149 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="m-0">
+      {% if mode == "account" %}
+        دفتر أستاذ (حساب)
+      {% else %}
+        دفتر الأستاذ العام
+      {% endif %}
+    </h3>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-header fw-bold">فلترة</div>
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+
+        <div class="col-md-4">
+          <label class="form-label">الفترة المحاسبية</label>
+          <select name="period" class="form-select">
+            <option value="">— كل الفترات —</option>
+            {% for p in periods %}
+              <option value="{{ p.id }}" {% if selected_period == p.id|stringformat:"s" %}selected{% endif %}>
+                {{ p.name }} {% if p.is_closed %}(مقفلة){% endif %}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">الحساب</label>
+          <select name="account" class="form-select">
+            <option value="">— كل الحسابات —</option>
+            {% for a in accounts %}
+              <option value="{{ a.id }}" {% if selected_account == a.id|stringformat:"s" %}selected{% endif %}>
+                {{ a.code }} - {{ a.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <button class="btn btn-primary w-100">عرض</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  {# ✅ ملخص الحساب فقط #}
+  {% if mode == "account" %}
+  <div class="card shadow-sm mb-3">
+    <div class="card-body d-flex flex-wrap gap-3 align-items-center justify-content-between">
+      <div>
+        <span class="fw-bold">الرصيد الافتتاحي:</span>
+        <span class="{{ opening_balance_class }}">{{ opening_balance_text }}</span>
+      </div>
+      <div>
+        <span class="fw-bold">إجمالي الفترة:</span>
+        مدين = <span class="fw-bold">{{ total_debit }}</span> |
+        دائن = <span class="fw-bold">{{ total_credit }}</span>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="card shadow-sm mb-3">
+    <div class="card-body d-flex flex-wrap gap-3 align-items-center justify-content-between">
+      <div>
+        <span class="fw-bold">إجمالي العرض:</span>
+        مدين = <span class="fw-bold">{{ total_debit }}</span> |
+        دائن = <span class="fw-bold">{{ total_credit }}</span>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="card shadow-sm">
+    <div class="card-header fw-bold">الحركات</div>
+
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered text-center align-middle m-0">
+        <thead class="table-dark">
+          {% if mode == "account" %}
+            <tr>
+              <th style="min-width:120px">التاريخ</th>
+              <th style="min-width:140px">رقم القيد</th>
+              <th style="min-width:140px">المرجع</th>
+              <th style="min-width:240px">البيان</th>
+              <th style="min-width:240px">ملاحظة</th>
+              <th style="min-width:120px">مدين</th>
+              <th style="min-width:120px">دائن</th>
+              <th style="min-width:140px">الرصيد</th>
+            </tr>
+          {% else %}
+            <tr>
+              <th style="min-width:120px">التاريخ</th>
+              <th style="min-width:140px">رقم القيد</th>
+              <th style="min-width:140px">المرجع</th>
+              <th style="min-width:160px">رمز الحساب</th>
+              <th style="min-width:260px">اسم الحساب</th>
+              <th style="min-width:240px">البيان</th>
+              <th style="min-width:240px">ملاحظة</th>
+              <th style="min-width:120px">مدين</th>
+              <th style="min-width:120px">دائن</th>
+            </tr>
+          {% endif %}
+        </thead>
+
+        <tbody>
+          {% for r in rows %}
+            {% if mode == "account" %}
+              <tr>
+                <td>{{ r.date }}</td>
+                <td class="fw-bold">{{ r.entry_serial }}</td>
+                <td>{{ r.reference }}</td>
+                <td class="text-start">{{ r.description }}</td>
+                <td class="text-start">{{ r.note }}</td>
+                <td>{% if r.debit %}{{ r.debit|floatformat:2 }}{% else %}-{% endif %}</td>
+                <td>{% if r.credit %}{{ r.credit|floatformat:2 }}{% else %}-{% endif %}</td>
+                <td class="{{ r.balance_class }}">{{ r.balance_text }}</td>
+              </tr>
+            {% else %}
+              <tr>
+                <td>{{ r.date }}</td>
+                <td class="fw-bold">{{ r.entry_serial }}</td>
+                <td>{{ r.reference }}</td>
+                <td class="fw-bold">{{ r.account_code }}</td>
+                <td class="text-start">{{ r.account_name }}</td>
+                <td class="text-start">{{ r.description }}</td>
+                <td class="text-start">{{ r.note }}</td>
+                <td>{% if r.debit %}{{ r.debit|floatformat:2 }}{% else %}-{% endif %}</td>
+                <td>{% if r.credit %}{{ r.credit|floatformat:2 }}{% else %}-{% endif %}</td>
+              </tr>
+            {% endif %}
+          {% empty %}
+            <tr>
+              <td colspan="{% if mode == 'account' %}8{% else %}9{% endif %}">لا توجد حركات</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

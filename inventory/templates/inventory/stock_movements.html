@@ -1,0 +1,30 @@
+{# templates/inventory/stock_movements.html #}
+<div>
+  <h5>سجل الحركات</h5>
+  <div class="table-responsive">
+    <table id="movementsTable" class="table table-sm table-hover">
+      <thead>
+        <tr>
+          <th>التاريخ</th>
+          <th>المنتج</th>
+          <th>الكمية</th>
+          <th>النوع</th>
+          <th>المستخدم</th>
+          <th>ملاحظات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mv in movements %}
+        <tr>
+          <td>{{ mv.created_at }}</td>
+          <td>{{ mv.product.name }}</td>
+          <td>{{ mv.quantity }}</td>
+          <td>{{ mv.get_type_display }}</td>
+          <td>{{ mv.user.username }}</td>
+          <td>{{ mv.note }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

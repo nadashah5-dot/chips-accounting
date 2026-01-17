@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h3 class="mb-2">كشف حساب عميل</h3>
+  <div class="mb-3">
+    <strong>العميل:</strong> {{ customer.name }}
+  </div>
+
+  <form method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-md-3">
+      <label class="form-label">من تاريخ</label>
+      <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">إلى تاريخ</label>
+      <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+    </div>
+    <div class="col-md-6 d-flex gap-2">
+      <button class="btn btn-primary" type="submit">عرض</button>
+      <a class="btn btn-outline-danger"
+         href="?date_from={{ date_from }}&date_to={{ date_to }}&format=pdf">
+        تصدير PDF
+      </a>
+    </div>
+  </form>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>التاريخ</th>
+          <th>النوع</th>
+          <th>المرجع</th>
+          <th>ملاحظة</th>
+          <th>مدين</th>
+          <th>دائن</th>
+          <th>الرصيد</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ r.date }}</td>
+            <td>{{ r.doc }}</td>
+            <td>{{ r.ref }}</td>
+            <td>{{ r.note }}</td>
+            <td>{{ r.debit }}</td>
+            <td>{{ r.credit }}</td>
+            <td><strong>{{ r.balance }}</strong></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

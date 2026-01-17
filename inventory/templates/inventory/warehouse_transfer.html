@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">تحويل بين المستودعات – {{ warehouse.name }}</h3>
+    <a href="{% url 'inventory:warehouse_detail' warehouse.pk %}" class="btn btn-secondary btn-sm">↩ رجوع</a>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-dark text-white">
+      بيانات التحويل
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">إلى مستودع</label>
+            {{ form.to_warehouse }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">المنتج</label>
+            {{ form.product }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">الكمية</label>
+            {{ form.quantity }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">ملاحظات</label>
+            {{ form.notes }}
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-warning">📦 تنفيذ التحويل</button>
+          <a href="{% url 'inventory:warehouse_detail' warehouse.pk %}" class="btn btn-outline-secondary">إلغاء</a>
+        </div>
+        
+        {% if messages %}
+           <div class="container mt-3">
+              {% for message in messages %}
+             <div class="alert alert-{{ message.tags }} text-center" role="alert">
+              {{ message }}
+             </div>
+        {% endfor %}
+            </div>
+       {% endif %}
+
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

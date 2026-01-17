@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+
+
+<div class="mb-3 text-center">
+  <a href="{% url 'inventory:warehouse_add' %}" class="btn btn-outline-dark btn-sm mx-1">
+    ➕ إضافة مستودع </a>
+</div>
+
+
+<div class="mb-3 text-center">
+  <a href="{% url 'inventory:export_all_warehouses_pdf' %}" class="btn btn-danger btn-sm mx-1">تصدير PDF لكل المستودعات</a>
+  <a href="{% url 'inventory:export_all_warehouses_excel' %}" class="btn btn-primary btn-sm mx-1">تصدير Excel لكل المستودعات</a>
+  <a href="{% url 'inventory:export_all_warehouses_csv' %}" class="btn btn-success btn-sm mx-1">تصدير CSV لكل المستودعات</a>
+</div>
+
+<table class="table table-bordered text-center table-striped">
+  <thead class="table-dark">
+    <tr>
+      <th>
+        <a href="?sort=name&order={% if sort == 'name' and order == 'asc' %}desc{% else %}asc{% endif %}{% if page %}&page={{ page }}{% endif %}">
+          اسم المستودع
+        </a>
+      </th>
+
+      <th>
+        <a href="?sort=quantity&order={% if sort == 'quantity' and order == 'asc' %}desc{% else %}asc{% endif %}{% if page %}&page={{ page }}{% endif %}">
+          إجمالي الكمية
+        </a>
+      </th>
+
+      <th>
+        <a href="?sort=date&order={% if sort == 'date' and order == 'asc' %}desc{% else %}asc{% endif %}{% if page %}&page={{ page }}{% endif %}">
+          تاريخ الإنشاء
+        </a>
+      </th>
+
+      <th>الإجراءات</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for warehouse in warehouses %}
+      <tr>
+        <td>{{ warehouse.name }}</td>
+        <td>{{ warehouse.total_qty|default_if_none:0 }}</td>
+        <td>
+          {% if warehouse.created_at %}
+            {{ warehouse.created_at|date:"Y-m-d" }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td>
+          <td>
+            <a href="{% url 'inventory:warehouse_detail' warehouse.pk %}" class="btn btn-outline-primary btn-sm">عرض</a>
+            <a href="{% url 'inventory:warehouse_edit' warehouse.pk %}" class="btn btn-outline-warning btn-sm">تعديل</a>
+            <a href="{% url 'inventory:warehouse_delete' warehouse.pk %}" class="btn btn-outline-danger btn-sm">حذف</a>
+          </td>
+
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4">لا توجد مستودعات.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if warehouses.has_other_pages %}
+  <div class="d-flex justify-content-center">
+    <nav>
+      <ul class="pagination">
+
+        {% if warehouses.has_previous %}
+          <li class="page-item">
+            <a class="page-link"
+               href="?page={{ warehouses.previous_page_number }}{% if sort %}&sort={{ sort }}{% endif %}{% if order %}&order={{ order }}{% endif %}">
+              السابق
+            </a>
+          </li>
+        {% endif %}
+
+        <li class="page-item disabled">
+          <span class="page-link">
+            صفحة {{ warehouses.number }} من {{ warehouses.paginator.num_pages }}
+          </span>
+        </li>
+
+        {% if warehouses.has_next %}
+          <li class="page-item">
+            <a class="page-link"
+               href="?page={{ warehouses.next_page_number }}{% if sort %}&sort={{ sort }}{% endif %}{% if order %}&order={{ order }}{% endif %}">
+              التالي
+            </a>
+          </li>
+        {% endif %}
+
+      </ul>
+    </nav>
+  </div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <title>{{ title }} - #{{ payment.id }}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    .box { border: 1px solid #ddd; padding: 16px; border-radius: 10px; }
+    .row { display: flex; justify-content: space-between; gap: 16px; margin: 8px 0; }
+    .label { color: #555; }
+    .value { font-weight: 700; }
+    .title { font-size: 22px; margin-bottom: 12px; font-weight: 800; }
+    .small { color:#666; font-size: 12px; margin-top: 16px; }
+    @media print {
+      button { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+  <button onclick="window.print()">🖨️ طباعة</button>
+
+  <div class="box">
+    <div class="title">{{ title }}</div>
+
+    <div class="row">
+      <div><span class="label">رقم السند:</span> <span class="value">#{{ payment.id }}</span></div>
+      <div><span class="label">التاريخ:</span> <span class="value">{{ payment.date }}</span></div>
+    </div>
+
+    <div class="row">
+      <div><span class="label">النوع:</span> <span class="value">{{ payment.get_payment_type_display }}</span></div>
+      <div><span class="label">{{ party_label }}:</span> <span class="value">{{ party_name }}</span></div>
+    </div>
+
+    <div class="row">
+      <div><span class="label">المبلغ:</span> <span class="value">{{ payment.amount }}</span></div>
+      <div><span class="label">ملاحظة:</span> <span class="value">{{ payment.note|default:"-" }}</span></div>
+    </div>
+
+    <div class="row">
+      <div>
+        <span class="label">القيد المرتبط:</span>
+        <span class="value">
+          {% if payment.journal_entry_id %}
+            {{ payment.journal_entry.serial_number|default:payment.journal_entry_id }}
+          {% else %}
+            غير مرحّل
+          {% endif %}
+        </span>
+      </div>
+    </div>
+
+    <div class="small">
+      تم إنشاء هذا السند من نظام المحاسبة.
+    </div>
+  </div>
+
+</body>
+</html>

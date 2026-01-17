@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">الوصفات (BOM)</h3>
+    <div class="d-flex gap-2">
+      <a href="{% url 'manufacturing_app:manufacturing_home' %}" class="btn btn-secondary btn-sm">↩ رجوع</a>
+      <a href="{% url 'manufacturing_app:bom_create' %}" class="btn btn-primary btn-sm">➕ وصفة</a>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered text-center table-striped align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th style="width:60px">#</th>
+          <th>المنتج النهائي</th>
+          <th style="width:220px">إجراء</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in boms %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td class="text-start">{{ b.product.name }}</td>
+            <td>
+              <a class="btn btn-outline-primary btn-sm" href="{% url 'manufacturing_app:bom_detail' b.pk %}">عرض</a>
+              <a class="btn btn-outline-warning btn-sm" href="{% url 'manufacturing_app:bom_edit' b.pk %}">تعديل</a>
+              <a class="btn btn-outline-danger btn-sm" href="{% url 'manufacturing_app:bom_delete' b.pk %}">حذف</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3">لا يوجد وصفات.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

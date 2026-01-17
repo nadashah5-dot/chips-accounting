@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}التصنيع{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-3">قسم التصنيع</h2>
+
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-primary" href="{% url 'manufacturing_app:bom_list' %}">📋 الوصفات (BOM)</a>
+    <a class="btn btn-outline-dark" href="{% url 'manufacturing_app:production_order_list' %}">🏭 أوامر الإنتاج</a>
+  </div>
+
+  <p class="mt-3 text-muted">
+    أنشئي وصفة للمنتج النهائي (BOM)، ثم أنشئي أمر إنتاج وحددي المستودع المصدر والوجهة، وبعدها نفّذي الأمر لتحديث المخزون تلقائياً.
+  </p>
+</div>
+{% endblock %}

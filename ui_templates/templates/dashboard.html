@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">مرحباً بك في لوحة التحكم 🎉</h2>
+
+<div class="row">
+  <div class="col-md-4 mb-3">
+    <a href="{% url 'account:accounting_home' %}" class="btn btn-primary w-100 p-4">المحاسبة</a>
+  </div>
+
+  <div class="col-md-4 mb-3">
+    <a href="{% url 'inventory:warehouse_list' %}" class="btn btn-success w-100 p-4">المستودعات</a>
+  </div>
+
+  <div class="col-md-4 mb-3">
+  <a href="{% url 'inventory:product_list' %}" class="btn btn-info w-100 p-4">المنتجات</a>
+  </div>
+
+  <div class="col-md-4 mb-3">
+    {# ✅ غالباً التصنيع عندك بدون namespace "manufacturing" لأن app_name مش متعرّف #}
+   <a href="{% url 'manufacturing_app:manufacturing_home' %}" class="btn btn-warning w-100 p-4">التصنيع</a>
+  </div>
+
+
+
+
+
+  <div class="col-md-4 mb-3">
+    <a href="{% url 'account:logout' %}" class="btn btn-danger w-100 p-4">تسجيل الخروج</a>
+  </div>
+</div>
+{% endblock %}

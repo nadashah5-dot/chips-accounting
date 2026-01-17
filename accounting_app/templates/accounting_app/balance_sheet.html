@@ -1,0 +1,110 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h3 class="mb-4">الميزانية العمومية</h3>
+
+    <div class="row">
+
+        <!-- الأصول -->
+        <div class="col-md-6">
+            <h5 class="text-success">الأصول</h5>
+            <table class="table table-bordered text-center">
+                <thead class="table-success">
+                    <tr>
+                        <th>رمز الحساب</th>
+                        <th>اسم الحساب</th>
+                        <th>الرصيد</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in assets %}
+                    <tr>
+                        <td>{{ a.code }}</td>
+                        <td>{{ a.name }}</td>
+                        <td>{{ a.balance }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="fw-bold">
+                    <tr>
+                        <td colspan="2">إجمالي الأصول</td>
+                        <td>{{ total_assets }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- الخصوم + حقوق الملكية -->
+        <div class="col-md-6">
+
+            <h5 class="text-danger">الخصوم</h5>
+            <table class="table table-bordered text-center mb-4">
+                <thead class="table-danger">
+                    <tr>
+                        <th>رمز الحساب</th>
+                        <th>اسم الحساب</th>
+                        <th>الرصيد</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in liabilities %}
+                    <tr>
+                        <td>{{ l.code }}</td>
+                        <td>{{ l.name }}</td>
+                        <td>{{ l.balance }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="fw-bold">
+                    <tr>
+                        <td colspan="2">إجمالي الخصوم</td>
+                        <td>{{ total_liabilities }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <h5 class="text-primary">حقوق الملكية</h5>
+            <table class="table table-bordered text-center">
+                <thead class="table-primary">
+                    <tr>
+                        <th>رمز الحساب</th>
+                        <th>اسم الحساب</th>
+                        <th>الرصيد</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in equity %}
+                    <tr>
+                        <td>{{ e.code }}</td>
+                        <td>{{ e.name }}</td>
+                        <td>{{ e.balance }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="fw-bold">
+                    <tr>
+                        <td colspan="2">إجمالي حقوق الملكية</td>
+                        <td>{{ total_equity }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- التوازن -->
+<div class="alert {% if is_balanced %}alert-success{% else %}alert-danger{% endif %} text-center mt-4">
+    <strong>
+        {% if is_balanced %}
+            الميزانية متوازنة ✔
+        {% else %}
+            الميزانية غير متوازنة ✖
+        {% endif %}
+    </strong>
+</div>
+
+</div>
+{% endblock %}

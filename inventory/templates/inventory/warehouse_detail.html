@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+
+  <!-- Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h3 class="mb-0">تفاصيل المستودع: {{ warehouse.name }}</h3>
+
+    <a href="{% url 'inventory:warehouse_list' %}" class="btn btn-secondary btn-sm">
+      ↩ رجوع للمستودعات
+    </a>
+  </div>
+
+  <!-- Actions -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <div class="d-flex flex-wrap justify-content-center gap-2">
+
+        <!-- عمليات -->
+        <a href="{% url 'inventory:warehouse_stock_add' warehouse.pk %}" class="btn btn-success btn-sm">
+          ➕ إضافة مخزون
+        </a>
+        <a href="{% url 'inventory:warehouse_stock_remove' warehouse.pk %}" class="btn btn-danger btn-sm">
+          ➖ سحب مخزون
+        </a>
+        <a href="{% url 'inventory:warehouse_movement_add' warehouse.pk %}" class="btn btn-warning btn-sm">
+          🧾 تسجيل حركة
+        </a>
+
+        {# إذا عندك URL للتحويل خليها، إذا لا احذفي السطر #}
+        <a href="{% url 'inventory:warehouse_transfer' warehouse.pk %}"
+         class="btn btn-outline-dark btn-sm">
+        🔁 تحويل لمستودع آخر
+        </a>
+
+
+        
+
+        <span class="mx-2 d-none d-md-inline">|</span>
+
+        <!-- تصدير المخزون -->
+        <a href="{% url 'inventory:export_warehouse_pdf' warehouse.pk %}" class="btn btn-outline-danger btn-sm">
+          PDF مخزون
+        </a>
+        <a href="{% url 'inventory:export_warehouse_excel' warehouse.pk %}" class="btn btn-outline-primary btn-sm">
+          Excel مخزون
+        </a>
+        <a href="{% url 'inventory:export_warehouse_csv' warehouse.pk %}" class="btn btn-outline-success btn-sm">
+          CSV مخزون
+        </a>
+
+        <!-- تصدير الحركات -->
+        <a href="{% url 'inventory:export_warehouse_movements_pdf' warehouse.pk %}" class="btn btn-dark btn-sm">
+          🧾 PDF سجل الحركات
+        </a>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- STOCK -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h5 class="mb-0">المخزون</h5>
+    <span class="badge bg-dark">إجمالي الكمية: {{ total_qty }}</span>
+  </div>
+
+  <div class="table-responsive mb-5">
+    <table class="table table-bordered text-center table-striped align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th style="width:60px">#</th>
+          <th>اسم المنتج</th>
+          <th style="width:160px">الكمية</th>
+          <th style="width:220px">إجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in stocks %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td class="text-start">{{ s.product.name }}</td>
+            <td><strong>{{ s.quantity }}</strong></td>
+            <td>
+              <a href="{% url 'inventory:warehouse_stock_edit' s.pk %}" class="btn btn-outline-warning btn-sm">تعديل</a>
+              <a href="{% url 'inventory:warehouse_stock_delete' s.pk %}" class="btn btn-outline-danger btn-sm">حذف</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4">لا يوجد مخزون.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- MOVEMENTS -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h5 class="mb-0">سجل الحركات</h5>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered text-center table-striped align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th style="width:60px">#</th>
+          <th>المنتج</th>
+          <th style="width:140px">نوع الحركة</th>
+          <th style="width:140px">الكمية</th>
+          <th style="width:200px">التاريخ</th>
+          <th>ملاحظات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in movements %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td class="text-start">{{ m.product.name }}</td>
+            <td>
+              {% if m.movement_type == 'إضافة' %}
+                <span class="badge bg-success">إضافة</span>
+              {% elif m.movement_type == 'سحب' %}
+                <span class="badge bg-danger">سحب</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ m.movement_type }}</span>
+              {% endif %}
+            </td>
+            <td><strong>{{ m.quantity }}</strong></td>
+            <td>{{ m.date|date:'Y-m-d H:i' }}</td>
+            <td class="text-start">{{ m.notes|default:"—" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6">لا توجد حركات.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if movements.has_other_pages %}
+    <div class="d-flex justify-content-center mt-3">
+      <nav>
+        <ul class="pagination">
+
+          {% if movements.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?mov_page={{ movements.previous_page_number }}">السابق</a>
+            </li>
+          {% endif %}
+
+          <li class="page-item disabled">
+            <span class="page-link">صفحة {{ movements.number }} من {{ movements.paginator.num_pages }}</span>
+          </li>
+
+          {% if movements.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?mov_page={{ movements.next_page_number }}">التالي</a>
+            </li>
+          {% endif %}
+
+        </ul>
+      </nav>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

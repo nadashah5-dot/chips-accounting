@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">تفاصيل أمر إنتاج PO#{{ order.id }}</h3>
+    <div class="d-flex gap-2">
+      <a href="{% url 'manufacturing_app:production_order_list' %}" class="btn btn-secondary btn-sm">↩ رجوع</a>
+      <a href="{% url 'manufacturing_app:production_order_edit' order.pk %}" class="btn btn-warning btn-sm">تعديل</a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <p class="mb-1"><strong>المنتج:</strong> {{ order.product.name }}</p>
+      <p class="mb-1"><strong>الكمية:</strong> {{ order.quantity }}</p>
+      <p class="mb-1"><strong>من:</strong> {{ order.source_warehouse.name|default:"—" }}</p>
+      <p class="mb-1"><strong>إلى:</strong> {{ order.destination_warehouse.name|default:"—" }}</p>
+      <p class="mb-1"><strong>الحالة:</strong> {{ order.get_status_display }}</p>
+      {% if order.notes %}<p class="mb-0"><strong>ملاحظات:</strong> {{ order.notes }}</p>{% endif %}
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <h5 class="mb-3">الوصفة (BOM)</h5>
+
+      {% if bom %}
+        <div class="table-responsive">
+          <table class="table table-bordered text-center table-striped align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th style="width:60px">#</th>
+                <th>المكون</th>
+                <th style="width:200px">الكمية لكل 1</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for it in bom_items %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td class="text-start">{{ it.component.name }}</td>
+                  <td><strong>{{ it.quantity }}</strong></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-warning mb-0">
+          لا يوجد BOM لهذا المنتج. أنشئي وصفة أولاً من صفحة الوصفات.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Execute -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      {% if order.status == "completed" %}
+        <div class="alert alert-success mb-0">هذا الأمر مكتمل.</div>
+      {% else %}
+        <form method="post" action="{% url 'manufacturing_app:production_order_execute' order.pk %}">
+          {% csrf_token %}
+          <button class="btn btn-success">
+            ✅ تنفيذ أمر الإنتاج (تحديث مخزون + تسجيل حركات)
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

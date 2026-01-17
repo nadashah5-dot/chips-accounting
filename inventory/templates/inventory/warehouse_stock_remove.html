@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}سحب صنف من {{ warehouse.name }}{% endblock %}
+
+{% block content %}
+<h3>سحب صنف - {{ warehouse.name }}</h3>
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label>المنتج</label>
+        <select name="product" class="form-select" required>
+            {% for s in stocks %}
+            <option value="{{ s.product.pk }}">{{ s.product.name }} (الموجود: {{ s.quantity }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>الكمية</label>
+        <input type="number" name="quantity" class="form-control" min="1" required>
+    </div>
+    <div class="mb-3">
+        <label>السبب</label>
+        <select name="reason" class="form-select">
+            <option value="بيع">بيع</option>
+            <option value="تلف">تلف</option>
+            <option value="تحويل">تحويل</option>
+        </select>
+    </div>
+    <button class="btn btn-danger" type="submit">سحب</button>
+    <a href="{% url 'inventory:warehouse_detail' warehouse.pk %}" class="btn btn-secondary">إلغاء</a>
+</form>
+{% endblock %}

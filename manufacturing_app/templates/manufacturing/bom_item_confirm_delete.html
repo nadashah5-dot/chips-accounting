@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}حذف مكون{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h5>هل تريد حذف هذا المكون؟</h5>
+      <p>{{ item.component.name }} ({{ item.quantity_per_unit }})</p>
+      <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger">حذف</button>
+        <a href="{% url 'bom_detail' item.bom.pk %}" class="btn btn-secondary">إلغاء</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+python manage.py runserver

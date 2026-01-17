@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}المحاسبة{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">المحاسبة</h2>
+
+<div class="row">
+    {% for op in operations %}
+    <div class="col-md-4 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">{{ op.name }}</h5>
+                <!-- استخدام namespace عند URL -->
+                <a href="{% url 'account:'|add:op.url %}" class="btn btn-primary">ادخل</a>
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

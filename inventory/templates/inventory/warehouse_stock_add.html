@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>إضافة مخزون – {{ warehouse.name }}</h3>
+
+<form method="post"
+      action="{% url 'inventory:warehouse_stock_add' warehouse.pk %}">
+  {% csrf_token %}
+
+  <div class="mb-3">
+    <label>المنتج</label>
+    {{ form.product }}
+  </div>
+
+  <div class="mb-3">
+    <label>الكمية</label>
+    {{ form.quantity }}
+  </div>
+
+  <button type="submit" class="btn btn-success">➕ إضافة</button>
+  <a href="{% url 'inventory:warehouse_detail' warehouse.pk %}"
+     class="btn btn-secondary">↩ رجوع</a>
+</form>
+
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}المخزون الحالي{% endblock %}
+{% block content %}
+<h2 class="mb-4">المخزون الحالي</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>المستودع</th>
+            <th>الوارد</th>
+            <th>الصادر</th>
+            <th>الكمية الحالية</th>
+            <th>إجراءات</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in stock_data %}
+        <tr>
+            <td>{{ item.warehouse.name }}</td>
+            <td>{{ item.total_in }}</td>
+            <td>{{ item.total_out }}</td>
+            <td>{{ item.current_qty }}</td>
+            <td>
+                <a href="{% url 'warehouse_stock_add' item.warehouse.id %}" class="btn btn-sm btn-success">إضافة صنف</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center">لا توجد بيانات حالياً</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

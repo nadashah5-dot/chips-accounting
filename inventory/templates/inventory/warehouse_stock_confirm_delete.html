@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}حذف منتج من المستودع{% endblock %}
+{% block content %}
+<h2>هل أنت متأكد من حذف "{{ stock.product.name }}" من مستودع "{{ stock.warehouse.name }}"؟</h2>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">تأكيد حذف الصنف</button>
+  <a href="{% url 'inventory:warehouse_detail' stock.warehouse.pk %}" class="btn btn-secondary">رجوع</a>
+</form>
+
+{% endblock %}

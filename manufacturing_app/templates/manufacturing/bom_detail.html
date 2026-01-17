@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">وصفة: {{ bom.product.name }}</h3>
+    <div class="d-flex gap-2">
+      <a href="{% url 'manufacturing_app:bom_list' %}" class="btn btn-secondary btn-sm">↩ رجوع</a>
+      <a href="{% url 'manufacturing_app:bom_edit' bom.pk %}" class="btn btn-warning btn-sm">تعديل</a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+
+      <div class="table-responsive">
+        <table class="table table-bordered text-center table-striped align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th style="width:60px">#</th>
+              <th>المكون</th>
+              <th style="width:200px">الكمية لكل 1</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for it in bom.items.all %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td class="text-start">{{ it.component.name }}</td>
+                <td><strong>{{ it.quantity }}</strong></td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3">لا يوجد مكونات.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

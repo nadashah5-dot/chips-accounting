@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load inventory_extras %}
+
+
+{% block title %}المخزون{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">المخزون</h2>
+
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between">
+        <a href="{% url 'inventory:product_add' %}" class="btn btn-success">إضافة منتج جديد</a>
+        <a href="{% url 'inventory:warehouse_add' %}" class="btn btn-success">إضافة مستودع جديد</a>
+    </div>
+</div>
+
+<!-- بطاقات المنتجات -->
+<h4>المنتجات</h4>
+<div class="row">
+    {% for product in products %}
+    <div class="col-md-3 mb-3">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column">
+                <!-- صورة افتراضية أو حقيقية إن وُجدت -->
+                <div class="mb-2 text-center">
+                    {% if product.image.url|default_if_none:"" %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-height:80px; object-fit:contain;">
+                    {% else %}
+                        <div style="font-size:40px;">🍟</div>
+                    {% endif %}
+                </div>
+                <h5 class="card-title text-center">{{ product.name }}</h5>
+                <p class="card-text text-center mb-1">الكود: {{ product.sku }}</p>
+                <p class="card-text text-center mb-2">الكمية الإجمالية: {{ totals|get_item:product.id|default:0 }}</p>
+
+                <div class="mt-auto">
+                    <a href="{% url 'inventory:product_detail' product.pk %}" class="btn btn-sm btn-info w-100 mb-1">تفاصيل</a>
+                    <div class="d-flex gap-1">
+                        <a href="{% url 'inventory:warehouse_movement_add' 1 %}" class="btn btn-sm btn-primary flex-fill">➕ إضافة</a>
+                        <a href="#" class="btn btn-sm btn-danger flex-fill" data-bs-toggle="modal" data-bs-target="#removeModal-{{ product.pk }}">➖ سحب</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal سحب للمنتج (نمطي) -->
+    <div class="modal fade" id="removeModal-{{ product.pk }}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <form method="post" action="{% url 'inventory:warehouse_stock_remove' 1 %}">
+          {% csrf_token %}
+          <input type="hidden" name="product" value="{{ product.pk }}">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">سحب صنف: {{ product.name }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-2">
+                <label>اختر المستودع</label>
+                <select name="warehouse" class="form-select">
+                  {% for wh in warehouses %}
+                    <option value="{{ wh.pk }}">{{ wh.name }} ({{ wh.code }})</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="mb-2">
+                <label>الكمية</label>
+                <input type="number" name="quantity" class="form-control" required>
+              </div>
+              <div class="mb-2">
+                <label>السبب (بيع/تلف/تحويل)</label>
+                <select name="reason" class="form-select">
+                  <option value="بيع">بيع</option>
+                  <option value="تلف">تلف</option>
+                  <option value="تحويل">تحويل</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-danger">سحب</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+</div>
+
+<hr>
+
+<!-- بطاقات المستودعات -->
+<h4 class="mt-4">المستودعات</h4>
+<div class="row">
+    {% for wh in warehouses %}
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ wh.name }}</h5>
+                <p>{{ wh.location }}</p>
+                <p class="mb-2">المسؤول: {{ wh.manager.get_full_name|default:"غير محدد" }}</p>
+                <div class="d-flex gap-1">
+                    <a href="{% url 'inventory:warehouse_detail' wh.pk %}" class="btn btn-sm btn-info flex-fill">دخول المستودع</a>
+                    <a href="{% url 'inventory:warehouse_stock_add' wh.pk %}" class="btn btn-sm btn-success flex-fill">➕ إضافة صنف</a>
+                    <a href="{% url 'inventory:warehouse_stock_remove' wh.pk %}" class="btn btn-sm btn-danger flex-fill">➖ سحب صنف</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

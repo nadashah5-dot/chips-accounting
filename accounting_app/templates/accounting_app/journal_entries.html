@@ -1,0 +1,490 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-end flex-wrap mb-3">
+    <div>
+      <h3 class="mb-0">القيود اليومية</h3>
+      <div class="text-muted small">إضافة قيد جديد + البحث عن القيد</div>
+    </div>
+  </div>
+
+  <!-- ========================= -->
+  <!-- نموذج إضافة قيد -->
+  <!-- ========================= -->
+  <form method="post" id="journalForm" novalidate>
+    {% csrf_token %}
+
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <div class="fw-bold">إضافة قيد جديد</div>
+
+        <button type="button" class="btn btn-light btn-sm" id="addRowBtn">
+          + إضافة سطر
+        </button>
+      </div>
+
+      <div class="card-body">
+
+        <!-- رأس القيد -->
+        <div class="row g-3 mb-2">
+          {% if entry_form.period %}
+          <div class="col-md-3">
+            <label class="form-label">الفترة المحاسبية</label>
+            {{ entry_form.period }}
+          </div>
+          {% endif %}
+
+          <div class="col-md-3">
+            <label class="form-label">التاريخ</label>
+            {{ entry_form.date }}
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">المرجع</label>
+            {{ entry_form.reference }}
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">البيان</label>
+            {{ entry_form.description }}
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <!-- Formset management -->
+        {{ line_formset.management_form }}
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="fw-bold">أسطر القيد</div>
+          <div class="text-muted small">ملاحظة: لا يُسمح بإدخال مدين ودائن في السطر نفسه.</div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-bordered text-center align-middle mb-0" id="linesTable">
+            <thead class="table-secondary">
+              <tr>
+                <th style="min-width:180px">رقم الحساب</th>
+                <th style="min-width:220px">اسم الحساب</th>
+                <th style="min-width:220px">البيان</th>
+                <th style="min-width:140px">مدين</th>
+                <th style="min-width:140px">دائن</th>
+                <th style="min-width:100px">حذف</th>
+              </tr>
+            </thead>
+
+            <tbody id="linesTbody">
+              {% for form in line_formset %}
+              <tr class="line-row">
+                <td>{{ form.account }}</td>
+                <td>{{ form.account_name }}</td>
+                <td>{{ form.note }}</td>
+                <td>{{ form.debit }}</td>
+                <td>{{ form.credit }}</td>
+                <td class="text-center">
+                  {{ form.DELETE }}
+                  <button type="button" class="btn btn-sm btn-outline-danger ms-1 removeRowBtn">حذف</button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- المجموع -->
+        <div class="alert alert-light border mt-3 mb-0 d-flex justify-content-between align-items-center flex-wrap">
+          <div>
+            <strong>المجموع:</strong>
+            مدين = <span id="totalDebit">0.00</span>
+            |
+            دائن = <span id="totalCredit">0.00</span>
+            <span id="balanceStatus" class="ms-3"></span>
+          </div>
+          <div class="text-muted small" id="formsetHint"></div>
+        </div>
+
+      </div>
+
+      <div class="card-footer text-end">
+        <button type="submit" class="btn btn-success" id="submitBtn">
+          حفظ القيد
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- ========================= -->
+  <!-- نموذج البحث -->
+  <!-- ========================= -->
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header bg-light fw-bold">بحث عن قيد</div>
+    <div class="card-body">
+      <form method="get" class="row g-2 align-items-end">
+
+        <div class="col-md-6">
+          <label class="form-label">بحث (رقم القيد / المرجع / البيان)</label>
+          <input type="text"
+                 name="q"
+                 value="{{ q }}"
+                 class="form-control"
+                 placeholder="مثال: JE-2025-12-000015 أو MANUAL-DEMO">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">من تاريخ</label>
+          <input type="date" name="date_from" value="{{ date_from }}" class="form-control">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">إلى تاريخ</label>
+          <input type="date" name="date_to" value="{{ date_to }}" class="form-control">
+        </div>
+
+        <div class="col-12 d-flex gap-2 mt-2">
+          <button class="btn btn-primary" type="submit">بحث</button>
+          <a class="btn btn-outline-secondary" href="{% url 'account:journal_entries' %}">مسح البحث</a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================= -->
+  <!-- نتائج البحث: لا تظهر إلا بعد البحث -->
+  <!-- ========================= -->
+  {% if entries %}
+    <h5 class="mt-4 mb-2">نتائج البحث</h5>
+
+    {% for entry in entries %}
+    <div class="card mb-4 shadow-sm" id="entry-{{ entry.id }}">
+
+      <div class="card-header bg-light d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="small">
+
+          <strong>قيد رقم:</strong>
+          <span class="text-primary fw-bold">{{ entry.serial_number|default:entry.id }}</span>
+
+          &nbsp; | &nbsp;
+          <strong>التاريخ:</strong> {{ entry.date }}
+
+          {% if entry.period %}
+            &nbsp; | &nbsp;
+            <strong>الفترة:</strong> {{ entry.period.name }}
+            {% if entry.period.is_closed %}
+              <span class="badge bg-dark ms-2">فترة مُقفلة</span>
+            {% endif %}
+          {% endif %}
+
+          {% if entry.reference %}
+            &nbsp; | &nbsp;
+            <strong>المرجع:</strong> {{ entry.reference }}
+          {% endif %}
+
+          {% if entry.is_reversed %}
+            <span class="badge bg-secondary ms-2">تم عكسه</span>
+          {% endif %}
+
+          {% if entry.reversed_entry %}
+            <span class="badge bg-info ms-2">
+              القيد العكسي: {{ entry.reversed_entry.serial_number|default:entry.reversed_entry.id }}
+            </span>
+          {% endif %}
+
+          {% if entry.original_entry %}
+            <span class="badge bg-info ms-2">
+              قيد عكسي للقيد: {{ entry.original_entry.serial_number|default:entry.original_entry.id }}
+            </span>
+          {% endif %}
+        </div>
+
+        <div class="d-flex gap-2">
+
+          {% if not entry.is_reversed and not entry.reversed_entry %}
+            {% if not entry.period or not entry.period.is_closed %}
+              {% if not entry.original_entry %}
+                <form method="post" action="{% url 'account:reverse_journal_entry' entry.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit"
+                          class="btn btn-warning btn-sm"
+                          onclick="return confirm('هل تريد إنشاء قيد عكسي لهذا القيد؟');">
+                    قيد عكسي
+                  </button>
+                </form>
+              {% endif %}
+            {% endif %}
+          {% endif %}
+
+          <a href="{% url 'account:export_single_journal_pdf' entry.id %}"
+             class="btn btn-outline-danger btn-sm">
+            PDF
+          </a>
+        </div>
+      </div>
+
+      <div class="card-body p-0">
+        <table class="table table-bordered table-sm mb-0 text-center">
+          <thead class="table-secondary">
+            <tr>
+              <th>رقم الحساب</th>
+              <th>اسم الحساب</th>
+              <th>البيان</th>
+              <th>مدين</th>
+              <th>دائن</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for line in entry.lines.all %}
+            <tr class="{% if line.debit > 0 %}debit-row{% endif %}{% if line.credit > 0 %} credit-row{% endif %}">
+              <td>{{ line.account.code }}</td>
+              <td>{{ line.account.name }}</td>
+              <td>{{ line.note|default:entry.description }}</td>
+              <td>{% if line.debit > 0 %}{{ line.debit }}{% else %}-{% endif %}</td>
+              <td>{% if line.credit > 0 %}{{ line.credit }}{% else %}-{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card-footer text-end">
+        {% with d=0 c=0 %}
+        {% for line in entry.lines.all %}
+          {% with d=d|add:line.debit c=c|add:line.credit %}{% endwith %}
+        {% endfor %}
+        <strong>المجموع:</strong>
+        مدين = {{ d }} | دائن = {{ c }}
+        {% if d == c %}
+          <span class="badge bg-success ms-3">قيد متوازن</span>
+        {% else %}
+          <span class="badge bg-danger ms-3">قيد غير متوازن</span>
+        {% endif %}
+        {% endwith %}
+      </div>
+
+    </div>
+    {% endfor %}
+
+    {% if page_obj and page_obj.paginator.num_pages > 1 %}
+      <nav class="mt-3">
+        <ul class="pagination justify-content-center">
+
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link"
+                 href="?q={{ q|urlencode }}&date_from={{ date_from|urlencode }}&date_to={{ date_to|urlencode }}&page={{ page_obj.previous_page_number }}">
+                السابق
+              </a>
+            </li>
+          {% endif %}
+
+          <li class="page-item disabled">
+            <span class="page-link">
+              صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}
+            </span>
+          </li>
+
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link"
+                 href="?q={{ q|urlencode }}&date_from={{ date_from|urlencode }}&date_to={{ date_to|urlencode }}&page={{ page_obj.next_page_number }}">
+                التالي
+              </a>
+            </li>
+          {% endif %}
+
+        </ul>
+      </nav>
+    {% endif %}
+
+  {% else %}
+    {% if q or date_from or date_to %}
+      <div class="alert alert-warning text-center mt-3">
+        لا توجد نتائج مطابقة.
+      </div>
+    {% endif %}
+  {% endif %}
+
+</div>
+
+<!-- ========================= -->
+<!-- CSS -->
+<!-- ========================= -->
+<style>
+  .debit-row { background-color: #eafaf1; }
+  .credit-row { background-color: #fdecea; }
+  input[type="checkbox"][name$="-DELETE"] { display: none; }
+</style>
+
+<!-- ========================= -->
+<!-- JavaScript -->
+<!-- ========================= -->
+<script>
+(function () {
+  const form = document.getElementById("journalForm");
+  const tbody = document.getElementById("linesTbody");
+  const addBtn = document.getElementById("addRowBtn");
+  const totalFormsInput = document.querySelector('input[name$="TOTAL_FORMS"]');
+  const submitBtn = document.getElementById("submitBtn");
+
+  const totalDebitEl = document.getElementById("totalDebit");
+  const totalCreditEl = document.getElementById("totalCredit");
+  const balanceStatusEl = document.getElementById("balanceStatus");
+  const hintEl = document.getElementById("formsetHint");
+
+  if (!form || !tbody || !addBtn || !totalFormsInput) return;
+
+  function parseNumber(v) {
+    const n = parseFloat(v);
+    return isNaN(n) ? 0 : n;
+  }
+
+  function isRowDeleted(row) {
+    const del = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+    return del ? del.checked : false;
+  }
+
+  function setRowDeleted(row, val) {
+    const del = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+    if (del) del.checked = val;
+    row.style.display = val ? "none" : "";
+  }
+
+  function calculateTotals() {
+    let totalDebit = 0;
+    let totalCredit = 0;
+    let activeRows = 0;
+
+    tbody.querySelectorAll("tr.line-row").forEach(row => {
+      if (isRowDeleted(row)) return;
+
+      const debitInput = row.querySelector('input[name$="-debit"]');
+      const creditInput = row.querySelector('input[name$="-credit"]');
+      const debit = debitInput ? parseNumber(debitInput.value) : 0;
+      const credit = creditInput ? parseNumber(creditInput.value) : 0;
+
+      const accSelect = row.querySelector('select[name$="-account"]');
+      const hasAcc = accSelect && accSelect.value;
+      if (hasAcc || debit > 0 || credit > 0) activeRows++;
+
+      totalDebit += debit;
+      totalCredit += credit;
+    });
+
+    totalDebitEl.innerText = totalDebit.toFixed(2);
+    totalCreditEl.innerText = totalCredit.toFixed(2);
+
+    if (totalDebit === totalCredit && totalDebit > 0) {
+      balanceStatusEl.textContent = "✔ القيد متوازن";
+      balanceStatusEl.className = "ms-3 text-success fw-bold";
+      submitBtn.disabled = false;
+    } else {
+      balanceStatusEl.textContent = "✖ القيد غير متوازن";
+      balanceStatusEl.className = "ms-3 text-danger fw-bold";
+      submitBtn.disabled = true;
+    }
+
+    if (activeRows === 0) {
+      hintEl.textContent = "يُرجى إدخال سطر واحد على الأقل (حساب + قيمة مدين/دائن).";
+      submitBtn.disabled = true;
+    } else {
+      hintEl.textContent = "";
+    }
+  }
+
+  async function fillAccountName(selectEl) {
+    const row = selectEl.closest("tr");
+    const nameInput = row.querySelector('input[name$="-account_name"]');
+    if (!nameInput) return;
+
+    const accountId = selectEl.value;
+    if (!accountId) { nameInput.value = ""; return; }
+
+    try {
+      const res = await fetch("{% url 'account:get_account_name' %}?account_id=" + encodeURIComponent(accountId));
+      const data = await res.json();
+      nameInput.value = data.name || "";
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function wireRow(row) {
+    const removeBtn = row.querySelector(".removeRowBtn");
+    if (removeBtn) {
+      removeBtn.addEventListener("click", () => {
+        const del = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+        if (del) setRowDeleted(row, true);
+        else row.remove();
+        calculateTotals();
+      });
+    }
+
+    row.querySelectorAll('input[name$="-debit"], input[name$="-credit"]').forEach(inp => {
+      inp.addEventListener("input", calculateTotals);
+    });
+
+    const accSelect = row.querySelector('select[name$="-account"]');
+    if (accSelect) {
+      accSelect.addEventListener("change", async () => {
+        await fillAccountName(accSelect);
+        calculateTotals();
+      });
+
+      if (accSelect.value) fillAccountName(accSelect);
+    }
+  }
+
+  function addRowFromEmptyForm() {
+    const index = parseInt(totalFormsInput.value, 10);
+
+    const emptyAccount = `{{ line_formset.empty_form.account|escapejs }}`.replaceAll("__prefix__", index);
+    const emptyAccountName = `{{ line_formset.empty_form.account_name|escapejs }}`.replaceAll("__prefix__", index);
+    const emptyNote = `{{ line_formset.empty_form.note|escapejs }}`.replaceAll("__prefix__", index);
+    const emptyDebit = `{{ line_formset.empty_form.debit|escapejs }}`.replaceAll("__prefix__", index);
+    const emptyCredit = `{{ line_formset.empty_form.credit|escapejs }}`.replaceAll("__prefix__", index);
+    const emptyDelete = `{{ line_formset.empty_form.DELETE|escapejs }}`.replaceAll("__prefix__", index);
+
+    const tpl = `
+      <tr class="line-row">
+        <td>${emptyAccount}</td>
+        <td>${emptyAccountName}</td>
+        <td>${emptyNote}</td>
+        <td>${emptyDebit}</td>
+        <td>${emptyCredit}</td>
+        <td class="text-center">
+          ${emptyDelete}
+          <button type="button" class="btn btn-sm btn-outline-danger ms-1 removeRowBtn">حذف</button>
+        </td>
+      </tr>
+    `;
+
+    const temp = document.createElement("tbody");
+    temp.innerHTML = tpl.trim();
+    const newRow = temp.querySelector("tr");
+
+    tbody.appendChild(newRow);
+    totalFormsInput.value = (index + 1).toString();
+
+    wireRow(newRow);
+    calculateTotals();
+  }
+
+  tbody.querySelectorAll("tr.line-row").forEach(wireRow);
+  calculateTotals();
+
+  addBtn.addEventListener("click", addRowFromEmptyForm);
+
+  form.addEventListener("submit", (e) => {
+    calculateTotals();
+    if (submitBtn.disabled) {
+      e.preventDefault();
+      alert("لا يمكن حفظ القيد: يُرجى التأكد من أن القيد متوازن ويحتوي على سطور صحيحة.");
+    }
+  });
+})();
+</script>
+
+{% endblock %}

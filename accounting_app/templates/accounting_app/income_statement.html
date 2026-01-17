@@ -1,0 +1,75 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h3 class="mb-4">قائمة الدخل</h3>
+
+    <!-- الإيرادات -->
+    <h5 class="text-success">الإيرادات</h5>
+    <table class="table table-bordered text-center align-middle mb-4">
+        <thead class="table-success">
+            <tr>
+                <th>رمز الحساب</th>
+                <th>اسم الحساب</th>
+                <th>المبلغ</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in revenues %}
+            <tr>
+                <td>{{ r.code }}</td>
+                <td>{{ r.name }}</td>
+                <td>{{ r.amount }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot class="fw-bold">
+            <tr>
+                <td colspan="2">إجمالي الإيرادات</td>
+                <td>{{ total_revenue }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- المصاريف -->
+    <h5 class="text-danger">المصاريف</h5>
+    <table class="table table-bordered text-center align-middle mb-4">
+        <thead class="table-danger">
+            <tr>
+                <th>رمز الحساب</th>
+                <th>اسم الحساب</th>
+                <th>المبلغ</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in expenses %}
+            <tr>
+                <td>{{ e.code }}</td>
+                <td>{{ e.name }}</td>
+                <td>{{ e.amount }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot class="fw-bold">
+            <tr>
+                <td colspan="2">إجمالي المصاريف</td>
+                <td>{{ total_expense }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- صافي النتيجة -->
+    <div class="alert {% if net_income >= 0 %}alert-success{% else %}alert-danger{% endif %} text-center">
+        <h5>
+            {% if net_income >= 0 %}
+                صافي الربح
+            {% else %}
+                صافي الخسارة
+            {% endif %}
+            : {{ net_income }}
+        </h5>
+    </div>
+
+</div>
+{% endblock %}

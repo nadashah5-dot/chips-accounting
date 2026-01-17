@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm p-3">
+    <h4>حذف وصفة</h4>
+    <p>هل أنت متأكد من حذف وصفة المنتج: <strong>{{ bom.product.name }}</strong> ؟</p>
+    <form method="post">
+      {% csrf_token %}
+      <button class="btn btn-danger">نعم احذف</button>
+      <a class="btn btn-secondary" href="{% url 'manufacturing_app:bom_list' %}">إلغاء</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}حذف المنتج{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h3 class="mb-3">حذف المنتج</h3>
+      <p>هل أنتِ متأكدة من حذف: <strong>{{ product.name }}</strong> ؟</p>
+
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">نعم، حذف</button>
+        <a class="btn btn-secondary" href="{% url 'inventory:product_list' %}">إلغاء</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

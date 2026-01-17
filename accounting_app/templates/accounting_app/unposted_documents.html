@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+
+  <h3 class="mb-3">المستندات غير المُرحَّلة</h3>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-header fw-bold">فلترة</div>
+    <div class="card-body">
+      <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">من تاريخ</label>
+          <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">إلى تاريخ</label>
+          <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
+        </div>
+        <div class="col-md-6 d-flex gap-2">
+          <button class="btn btn-primary">عرض</button>
+          <a class="btn btn-outline-secondary" href="{% url 'account:unposted_documents' %}">إزالة الفلترة</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- فواتير البيع -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-header fw-bold">فواتير البيع غير المُرحَّلة</div>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped text-center align-middle m-0">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>التاريخ</th>
+            <th>العميل</th>
+            <th>الإجمالي</th>
+            <th>إجراء</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in sales_unposted %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ inv.date }}</td>
+              <td>{{ inv.customer.name|default:"-" }}</td>
+              <td>{{ inv.total|default:"0" }}</td>
+              <td>
+                <form method="post" action="{% url 'account:post_sales_invoice' inv.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-success">ترحيل</button>
+                </form>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5">لا يوجد فواتير بيع غير مُرحَّلة</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- فواتير الشراء -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-header fw-bold">فواتير الشراء غير المُرحَّلة</div>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped text-center align-middle m-0">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>التاريخ</th>
+            <th>المورد</th>
+            <th>الإجمالي</th>
+            <th>إجراء</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in purchase_unposted %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ inv.date }}</td>
+              <td>{{ inv.supplier.name|default:"-" }}</td>
+              <td>{{ inv.total|default:"0" }}</td>
+              <td>
+                <form method="post" action="{% url 'account:post_purchase_invoice' inv.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-success">ترحيل</button>
+                </form>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5">لا يوجد فواتير شراء غير مُرحَّلة</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- سندات (اختياري: إذا كنتِ مضافة بالـ view) -->
+  {% if receipts_unposted is not None or disburse_unposted is not None %}
+  <div class="card shadow-sm mb-3">
+    <div class="card-header fw-bold">السندات غير المُرحَّلة</div>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped text-center align-middle m-0">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>النوع</th>
+            <th>التاريخ</th>
+            <th>الطرف</th>
+            <th>المبلغ</th>
+            <th>إجراء</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          {% for p in receipts_unposted %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>سند قبض</td>
+            <td>{{ p.date }}</td>
+            <td>{{ p.customer.name|default:"-" }}</td>
+            <td>{{ p.amount }}</td>
+            <td>
+              <form method="post" action="{% url 'account:post_payment' p.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-success">ترحيل</button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          {% endfor %}
+
+          {% for p in disburse_unposted %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>سند صرف</td>
+            <td>{{ p.date }}</td>
+            <td>{{ p.supplier.name|default:"-" }}</td>
+            <td>{{ p.amount }}</td>
+            <td>
+              <form method="post" action="{% url 'account:post_payment' p.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-success">ترحيل</button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          {% endfor %}
+
+          {% if receipts_unposted|length == 0 and disburse_unposted|length == 0 %}
+            <tr><td colspan="6">لا يوجد سندات غير مُرحَّلة</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

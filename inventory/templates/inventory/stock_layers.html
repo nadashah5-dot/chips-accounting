@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}طبقات المنتج{% endblock %}
+
+{% block content %}
+<h2>طبقات المنتج: {{ product.name }}</h2>
+
+<a href="{% url 'inventory_home' %}" class="btn btn-primary mb-3">العودة للمخزون</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>اسم الطبقة</th>
+            <th>الكمية</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for layer in product.layers.all %}
+        <tr>
+            <td>{{ layer.name }}</td>
+            <td>{{ layer.quantity }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="2">لا توجد طبقات</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

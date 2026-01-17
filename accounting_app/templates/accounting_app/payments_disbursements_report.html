@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}تقرير سندات الصرف{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">تقرير سندات الصرف</h3>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'account:payments' %}">رجوع للسندات</a>
+    </div>
+  </div>
+
+  <form class="card card-body shadow-sm mb-3" method="get">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">من تاريخ</label>
+        <input type="date" name="from" class="form-control" value="{{ date_from|date:'Y-m-d' }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">إلى تاريخ</label>
+        <input type="date" name="to" class="form-control" value="{{ date_to|date:'Y-m-d' }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">المورد</label>
+        <select name="supplier" class="form-select">
+          <option value="">— الكل —</option>
+          {% for s in suppliers %}
+            <option value="{{ s.id }}" {% if selected_supplier == s.id %}selected{% endif %}>{{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">حساب الصندوق/البنك</label>
+        <select name="cash_account" class="form-select">
+          <option value="">— الكل —</option>
+          {% for a in cash_accounts %}
+            <option value="{{ a.id }}" {% if selected_cash == a.id %}selected{% endif %}>{{ a.code }} - {{ a.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12 d-flex gap-2 mt-2">
+        <button class="btn btn-primary" type="submit">تصفية</button>
+
+        <a class="btn btn-outline-success" href="{% url 'account:disbursements_report_excel' %}?{{ request.GET.urlencode }}">Excel</a>
+        <a class="btn btn-outline-danger" href="{% url 'account:disbursements_report_pdf' %}?{{ request.GET.urlencode }}">PDF</a>
+
+        <a class="btn btn-outline-secondary" href="{% url 'account:disbursements_report' %}">تفريغ</a>
+      </div>
+    </div>
+  </form>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="text-muted">عدد السندات: {{ rows|length }}</div>
+        <div class="fw-bold">الإجمالي: {{ total|floatformat:2 }}</div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>رقم السند</th>
+              <th>التاريخ</th>
+              <th>المورد</th>
+              <th>حساب الصندوق/البنك</th>
+              <th class="text-end">المبلغ</th>
+              <th>القيد</th>
+              <th class="text-center">طباعة</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in rows %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ p.voucher_number }}</td>
+                <td>{{ p.date }}</td>
+                <td>{{ p.supplier.name }}</td>
+                <td>{% if p.cash_account %}{{ p.cash_account.code }} - {{ p.cash_account.name }}{% else %}—{% endif %}</td>
+                <td class="text-end">{{ p.amount|floatformat:2 }}</td>
+                <td>{% if p.journal_entry %}{{ p.journal_entry.entry_number }}{% else %}—{% endif %}</td>
+                <td class="text-center">
+                  <a class="btn btn-sm btn-outline-primary" href="{% url 'account:payment_pdf' p.id %}">PDF</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="8" class="text-center text-muted py-4">لا توجد بيانات حسب الفلاتر الحالية.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

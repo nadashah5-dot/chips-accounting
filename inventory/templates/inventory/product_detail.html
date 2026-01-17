@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تفاصيل المنتج{% endblock %}
+
+{% block content %}
+<h2>تفاصيل المنتج: {{ product.name }}</h2>
+
+<ul class="list-group mb-3">
+    <li class="list-group-item"><strong>الوصف:</strong> {{ product.description }}</li>
+    <li class="list-group-item"><strong>السعر:</strong> {{ product.price }}</li>
+    <li class="list-group-item"><strong>الكمية:</strong> {{ product.quantity }}</li>
+</ul>
+
+<a href="{% url 'inventory:product_edit' product.pk %}" class="btn btn-warning">تعديل</a>
+<a href="{% url 'inventory:product_delete' product.pk %}" class="btn btn-danger">حذف</a>
+<a href="{% url 'inventory:export_layers_csv' product.pk %}" class="btn btn-info">تصدير الطبقات</a>
+<a href="{% url 'inventory:export_movements_csv' product.pk %}" class="btn btn-secondary">تصدير الحركات</a>
+<a href="{% url 'inventory:inventory_home' %}" class="btn btn-primary">العودة للمخزون</a>
+{% endblock %}

@@ -1,0 +1,36 @@
+<ul class="list-group mt-1">
+    {% for child in parent.children.all %}
+    <li class="list-group-item">
+
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span class="fw-bold text-secondary">{{ child.code }}</span> - {{ child.name }}
+            </div>
+
+            <div class="btn-group">
+                <!-- تعديل الحساب -->
+                <a href="{% url 'account:edit_account' child.id %}" class="btn btn-outline-primary btn-sm" title="تعديل الحساب">
+                    ✏️
+                </a>
+
+                <!-- إضافة / حذف الحساب الفرعي -->
+                <a href="{% url 'account:add_subaccount' child.id %}" class="btn btn-outline-success btn-sm" title="إضافة حساب فرعي">
+                    ➕
+                </a>
+                <a href="{% url 'account:delete_account' child.id %}" class="btn btn-outline-danger btn-sm"
+                   onclick="return confirm('هل أنت متأكد من حذف هذا الحساب؟')" title="حذف الحساب">
+                    🗑
+                </a>
+            </div>
+        </div>
+
+        <!-- 🔁 استدعاء تكراري لعرض أي طبقات فرعية أخرى -->
+        {% if child.children.exists %}
+        <div class="mt-2 ms-4 border-start ps-3">
+            {% include "accounting_app/account_children.html" with parent=child %}
+        </div>
+        {% endif %}
+
+    </li>
+    {% endfor %}
+</ul>

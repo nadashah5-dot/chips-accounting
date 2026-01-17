@@ -1,0 +1,127 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+
+  <h3 class="mb-3">فواتير المبيعات</h3>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-header fw-bold">إضافة فاتورة</div>
+    <div class="card-body">
+      <form method="post" class="row g-3">
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        <div class="col-md-4">
+          <label class="form-label">العميل</label>
+          {{ form.customer }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">التاريخ</label>
+          {{ form.date }}
+        </div>
+
+        <div class="col-12">
+          <div class="table-responsive">
+            <table class="table table-bordered align-middle text-center">
+              <thead class="table-light">
+                <tr>
+                  <th>الصنف</th>
+                  <th>الكمية</th>
+                  <th>السعر</th>
+                  <th>حذف</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for f in formset %}
+                <tr>
+                  <td>{{ f.product }}</td>
+                  <td>{{ f.qty }}</td>
+                  <td>{{ f.price }}</td>
+                  <td>{{ f.DELETE }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <small class="text-muted">ملاحظة: اتركي الصفوف الفارغة.</small>
+        </div>
+
+        <div class="col-12">
+          <button class="btn btn-primary">حفظ وترحيل</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header fw-bold">قائمة الفواتير</div>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered text-center align-middle m-0">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>رقم الفاتورة</th>
+            <th>العميل</th>
+            <th>التاريخ</th>
+            <th>الإجمالي</th>
+            <th>القيد</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for inv in invoices %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td class="fw-bold">{{ inv.invoice_number }}</td>
+              <td>{{ inv.customer.name }}</td>
+              <td>{{ inv.date }}</td>
+              <td>{{ inv.total }}</td>
+
+              <td>
+                {% if inv.journal_entry %}
+                  <div class="d-flex gap-2 justify-content-center align-items-center flex-wrap">
+
+                    <span class="badge bg-success">
+                      {{ inv.journal_entry.serial_number }}
+                    </span>
+
+                    <a class="btn btn-sm btn-outline-primary"
+                       href="{% url 'account:sales_invoice_pdf' inv.id %}">
+                      PDF
+                    </a>
+
+                    <!-- ✅ زر العكس: يظهر فقط إذا الفاتورة مرحّلة -->
+                    <form method="post"
+                          action="{% url 'account:reverse_sales_invoice' inv.id %}"
+                          style="display:inline;"
+                          onsubmit="return confirm('متأكدة بدك تعملي قيد عكسي لهاي الفاتورة؟');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-outline-warning">
+                        عكس
+                      </button>
+                    </form>
+
+                  </div>
+
+                {% else %}
+                  <form method="post" action="{% url 'account:post_sales_invoice' inv.id %}">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-warning">ترحيل</button>
+                  </form>
+                {% endif %}
+              </td>
+
+            </tr>
+          {% empty %}
+            <tr><td colspan="6">لا يوجد فواتير</td></tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

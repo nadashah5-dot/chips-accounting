@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}إضافة صنف للمستودع{% endblock %}
+{% block content %}
+<h2>إضافة صنف جديد إلى {{ warehouse.name }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">إضافة</button>
+    <a href="{% url 'inventory:warehouse_detail' warehouse.pk %}" class="btn btn-secondary">رجوع</a>
+</form>
+{% endblock %}
