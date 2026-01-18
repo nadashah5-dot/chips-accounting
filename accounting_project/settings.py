@@ -42,6 +42,7 @@ if not ALLOWED_HOSTS:
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
 
 # Application definition
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -49,12 +50,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "accounting_app.apps.AccountingAppConfig",
+
+    "accounting_app.apps.AccountingAppConfig",  # خليها بس مرة وحدة
+
     'inventory',           # التطبيق اللي فيه Products
-    'accounting_app',      # التطبيق الجديد للفواتير
     'manufacturing_app',   # التطبيق الجديد لأوامر الإنتاج
     'ui_templates',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
