@@ -1,3 +1,5 @@
+# accounting_app/apps.py
+
 from django.apps import AppConfig
 
 
@@ -5,10 +7,11 @@ class AccountingAppConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "accounting_app"
 
-    # ملاحظة:
-    # تم تعطيل تحميل signals بشكل افتراضي حتى لا يحدث تحديث مخزون WarehouseStock تلقائياً
-    # عند إنشاء PurchaseItem. نظام المحاسبة يعتمد على FIFO (StockLayer/StockMovement)
-    # ويتم تحديث المخزون عند الترحيل post_to_journal فقط.
     def ready(self):
-        # لا تستورد signals هنا
-        return
+        # تشغيل seed مرة وحدة عند الإقلاع (لو الداتابيس فاضية)
+        try:
+            from .seed_accounts import seed_accounts_if_empty
+            seed_accounts_if_empty()
+        except Exception:
+            # ما بدنا نكسر تشغيل السيرفر لأي سبب
+            pass

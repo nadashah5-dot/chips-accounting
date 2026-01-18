@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    "accounting_app.apps.AccountingAppConfig",
     'inventory',           # التطبيق اللي فيه Products
     'accounting_app',      # التطبيق الجديد للفواتير
     'manufacturing_app',   # التطبيق الجديد لأوامر الإنتاج
